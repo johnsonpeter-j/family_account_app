@@ -2,6 +2,7 @@ import { createCommonStyles } from '@/constants/commonStyles';
 import { borderRadius, spacing, theme, typography } from '@/constants/theme';
 import { useTheme } from '@/contexts/ThemeContext';
 import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import React, { useRef, useState } from 'react';
 import {
   Animated,
@@ -21,6 +22,7 @@ const { width } = Dimensions.get('window');
 const isTablet = width >= 768;
 
 export default function SignInScreen() {
+  const router = useRouter();
   const { isDark, colors, toggleTheme } = useTheme();
   const styles = createCommonStyles({ ...theme, spacing, borderRadius, typography }, isDark);
   const dynamicStyles = makeStyles(isDark, colors);
@@ -194,7 +196,7 @@ export default function SignInScreen() {
         {/* Forgot Password Link */}
         <TouchableOpacity
           style={dynamicStyles.forgotPassword}
-          onPress={() => {/* Handle forgot password */}}
+          onPress={() => router.push('/screens/forgot-password')}
           accessibilityLabel="Forgot password">
           <Text style={styles.linkText}>Forgot Password?</Text>
         </TouchableOpacity>
@@ -213,7 +215,9 @@ export default function SignInScreen() {
         <View style={dynamicStyles.footer}>
           <Text style={styles.footerText}>
             Don't have an account?{' '}
-            <Text style={[styles.footerLink, styles.linkText]} onPress={() => {/* Handle sign up */}}>
+            <Text
+              style={[styles.footerLink, styles.linkText]}
+              onPress={() => router.push('/screens/signup')}>
               Sign Up
             </Text>
           </Text>
