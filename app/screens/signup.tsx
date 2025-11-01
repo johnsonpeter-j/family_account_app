@@ -141,7 +141,7 @@ export default function SignUpScreen() {
     // Simulate API call
     setTimeout(() => {
       setLoading(false);
-      router.push('/screens/signin');
+      router.push('/signin');
     }, 1500);
   };
 
@@ -363,7 +363,7 @@ export default function SignUpScreen() {
               Already have an account?{' '}
               <Text
                 style={[styles.footerLink, styles.linkText]}
-                onPress={() => router.push('/screens/signin')}>
+                onPress={() => router.push('/signin')}>
                 Sign In
               </Text>
             </Text>

@@ -198,7 +198,7 @@ export default function ForgotPasswordScreen() {
 
           {/* Footer */}
           <View style={dynamicStyles.footer}>
-            <TouchableOpacity onPress={() => router.push('/screens/signin')}>
+            <TouchableOpacity onPress={() => router.push('/signin')}>
               <Text style={[styles.linkText, dynamicStyles.backLink]}>
                 Back to Sign In
               </Text>

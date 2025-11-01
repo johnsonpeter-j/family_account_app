@@ -5,17 +5,17 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useRef, useState } from 'react';
 import {
-  Animated,
-  Dimensions,
-  KeyboardAvoidingView,
-  Platform,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
+    Animated,
+    Dimensions,
+    KeyboardAvoidingView,
+    Platform,
+    Pressable,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from 'react-native';
 
 const { width } = Dimensions.get('window');
@@ -196,7 +196,7 @@ export default function SignInScreen() {
         {/* Forgot Password Link */}
         <TouchableOpacity
           style={dynamicStyles.forgotPassword}
-          onPress={() => router.push('/screens/forgot-password')}
+          onPress={() => router.push('/forgot-password')}
           accessibilityLabel="Forgot password">
           <Text style={styles.linkText}>Forgot Password?</Text>
         </TouchableOpacity>
@@ -204,7 +204,7 @@ export default function SignInScreen() {
         {/* Sign In Button */}
         <TouchableOpacity
           style={[styles.button, dynamicStyles.button]}
-          onPress={() => {/* Handle sign in */}}
+          onPress={() => router.push('/dashboard')}
           accessibilityLabel="Sign in"
           accessibilityRole="button">
           <Text style={styles.buttonText}>Sign In</Text>
@@ -217,7 +217,7 @@ export default function SignInScreen() {
             Don't have an account?{' '}
             <Text
               style={[styles.footerLink, styles.linkText]}
-              onPress={() => router.push('/screens/signup')}>
+              onPress={() => router.push('/signup')}>
               Sign Up
             </Text>
           </Text>

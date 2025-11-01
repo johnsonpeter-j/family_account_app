@@ -1,9 +1,9 @@
 import { ThemeProvider } from '@/contexts/ThemeContext';
 import {
-    Inter_400Regular,
-    Inter_500Medium,
-    Inter_600SemiBold,
-    Inter_700Bold,
+  Inter_400Regular,
+  Inter_500Medium,
+  Inter_600SemiBold,
+  Inter_700Bold,
 } from '@expo-google-fonts/inter';
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
@@ -37,9 +37,10 @@ export default function RootLayout() {
       <StatusBar style="auto" />
       <Stack>
         <Stack.Screen name="index" options={{ headerShown: false }} />
-        <Stack.Screen name="screens/signin" options={{ headerShown: false }} />
-        <Stack.Screen name="screens/signup" options={{ headerShown: false }} />
-        <Stack.Screen name="screens/forgot-password" options={{ headerShown: false }} />
+        <Stack.Screen name="signin" options={{ headerShown: false }} />
+        <Stack.Screen name="signup" options={{ headerShown: false }} />
+        <Stack.Screen name="forgot-password" options={{ headerShown: false }} />
+        <Stack.Screen name="dashboard" options={{ headerShown: false }} />
       </Stack>
     </ThemeProvider>
   );

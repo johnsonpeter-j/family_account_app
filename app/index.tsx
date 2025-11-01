@@ -1,2 +1,4 @@
-export { default } from './screens/signin';
+import SignInScreen from './screens/signin';
+
+export default SignInScreen;
 
