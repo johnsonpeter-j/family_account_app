@@ -12,8 +12,8 @@ interface QuickAction {
 }
 
 const quickActions: QuickAction[] = [
-  { label: 'Add Transaction', icon: 'add-circle', color: '#3B82F6', path: '/transactions/entry' },
-  { label: 'Add Lend & Borrow', icon: 'cash', color: '#8B5CF6', path: '/lend-borrow/entry' },
+  { label: 'Add Transaction', icon: 'add-circle', color: '#3B82F6', path: '/(main-screens)/transactions/entry' },
+  { label: 'Add Lend & Borrow', icon: 'cash', color: '#8B5CF6', path: '/(main-screens)/lend-borrow/entry' },
 ];
 
 export function QuickActions() {

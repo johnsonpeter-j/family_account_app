@@ -18,15 +18,15 @@ interface MenuItem {
 }
 
 const menuItems: MenuItem[] = [
-  { id: 'dashboard', label: 'Dashboard', icon: 'grid', path: '/dashboard' },
+  { id: 'dashboard', label: 'Dashboard', icon: 'grid', path: '/(main-screens)/dashboard' },
   { 
     id: 'transaction', 
     label: 'Transaction', 
     icon: 'swap-horizontal',
     children: [
-      { id: 'transaction-entry', label: 'Entry', icon: 'add-circle', path: '/transactions/entry' },
-      { id: 'transaction-category', label: 'Category', icon: 'folder', path: '/transactions/category' },
-      { id: 'transaction-report', label: 'Report', icon: 'document-text', path: '/transactions/report' },
+      { id: 'transaction-entry', label: 'Entry', icon: 'add-circle', path: '/(main-screens)/transactions/entry' },
+      { id: 'transaction-category', label: 'Category', icon: 'folder', path: '/(main-screens)/transactions/category' },
+      { id: 'transaction-report', label: 'Report', icon: 'document-text', path: '/(main-screens)/transactions/report' },
     ]
   },
   { 
@@ -34,13 +34,13 @@ const menuItems: MenuItem[] = [
     label: 'Lend & Borrow', 
     icon: 'cash',
     children: [
-      { id: 'lend-entry', label: 'Entry', icon: 'add-circle', path: '/lend-borrow/entry' },
-      { id: 'lend-report', label: 'Report', icon: 'document-text', path: '/lend-borrow/report' },
+      { id: 'lend-entry', label: 'Entry', icon: 'add-circle', path: '/(main-screens)/lend-borrow/entry' },
+      { id: 'lend-report', label: 'Report', icon: 'document-text', path: '/(main-screens)/lend-borrow/report' },
     ]
   },
-  { id: 'budget', label: 'Budget', icon: 'wallet', path: '/budget' },
-  { id: 'collaborate', label: 'Collaborate', icon: 'people', path: '/collaborate' },
-  { id: 'settings', label: 'Settings', icon: 'settings', path: '/settings' },
+  { id: 'budget', label: 'Budget', icon: 'wallet', path: '/(main-screens)/budget' },
+  { id: 'collaborate', label: 'Collaborate', icon: 'people', path: '/(main-screens)/collaborate' },
+  { id: 'settings', label: 'Settings', icon: 'settings', path: '/(main-screens)/settings' },
 ];
 
 interface SidebarProps {

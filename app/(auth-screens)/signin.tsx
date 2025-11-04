@@ -204,7 +204,7 @@ export default function SignInScreen() {
         {/* Sign In Button */}
         <TouchableOpacity
           style={[styles.button, dynamicStyles.button]}
-          onPress={() => router.push('/dashboard')}
+          onPress={() => router.push('/(main-screens)/dashboard')}
           accessibilityLabel="Sign in"
           accessibilityRole="button">
           <Text style={styles.buttonText}>Sign In</Text>
@@ -321,4 +321,6 @@ const makeStyles = (isDark: boolean, colors: any) =>
       paddingBottom: spacing.xl,
     },
   });
+
+
 
