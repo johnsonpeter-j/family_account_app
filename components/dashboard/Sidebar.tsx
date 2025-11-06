@@ -29,15 +29,6 @@ const menuItems: MenuItem[] = [
       { id: 'transaction-report', label: 'Report', icon: 'document-text', path: '/(main-screens)/transactions/report' },
     ]
   },
-  { 
-    id: 'lend-borrow', 
-    label: 'Lend & Borrow', 
-    icon: 'cash',
-    children: [
-      { id: 'lend-entry', label: 'Entry', icon: 'add-circle', path: '/(main-screens)/lend-borrow/entry' },
-      { id: 'lend-report', label: 'Report', icon: 'document-text', path: '/(main-screens)/lend-borrow/report' },
-    ]
-  },
   { id: 'budget', label: 'Budget', icon: 'wallet', path: '/(main-screens)/budget' },
   { id: 'collaborate', label: 'Collaborate', icon: 'people', path: '/(main-screens)/collaborate' },
   { id: 'settings', label: 'Settings', icon: 'settings', path: '/(main-screens)/settings' },
