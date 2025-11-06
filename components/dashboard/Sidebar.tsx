@@ -19,18 +19,11 @@ interface MenuItem {
 
 const menuItems: MenuItem[] = [
   { id: 'dashboard', label: 'Dashboard', icon: 'grid', path: '/(main-screens)/dashboard' },
-  { 
-    id: 'transaction', 
-    label: 'Transaction', 
-    icon: 'swap-horizontal',
-    children: [
-      { id: 'transaction-entry', label: 'Entry', icon: 'add-circle', path: '/(main-screens)/transactions/entry' },
-      { id: 'transaction-category', label: 'Category', icon: 'folder', path: '/(main-screens)/transactions/category' },
-      { id: 'transaction-report', label: 'Report', icon: 'document-text', path: '/(main-screens)/transactions/report' },
-    ]
-  },
+  { id: 'transaction', label: 'Transaction', icon: 'swap-horizontal', path: '/(main-screens)/transactions/transaction' },
+  { id: 'transaction-category', label: 'Category', icon: 'folder', path: '/(main-screens)/transactions/category' },
+  { id: 'transaction-sub-category', label: 'Sub Category', icon: 'folder-outline', path: '/(main-screens)/transactions/sub-category' },
+  { id: 'transaction-report', label: 'Report', icon: 'document-text', path: '/(main-screens)/transactions/report' },
   { id: 'budget', label: 'Budget', icon: 'wallet', path: '/(main-screens)/budget' },
-  { id: 'collaborate', label: 'Collaborate', icon: 'people', path: '/(main-screens)/collaborate' },
   { id: 'settings', label: 'Settings', icon: 'settings', path: '/(main-screens)/settings' },
 ];
 

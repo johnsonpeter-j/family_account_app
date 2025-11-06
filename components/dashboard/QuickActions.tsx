@@ -12,7 +12,7 @@ interface QuickAction {
 }
 
 const quickActions: QuickAction[] = [
-  { label: 'Add Transaction', icon: 'add-circle', color: '#3B82F6', path: '/(main-screens)/transactions/entry' },
+  { label: 'Add Transaction', icon: 'add-circle', color: '#3B82F6', path: '/(main-screens)/transactions/transaction' },
   { label: 'Add Lend & Borrow', icon: 'cash', color: '#8B5CF6', path: '/(main-screens)/lend-borrow/entry' },
 ];
 
