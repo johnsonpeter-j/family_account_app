@@ -1,9 +1,12 @@
+import tokenStorage from '@/api/tokenStorage';
 import { borderRadius, spacing, typography } from '@/constants/theme';
 import { useTheme } from '@/contexts/ThemeContext';
+import { useUser } from '@/contexts/UserContext';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { useEffect, useState } from 'react';
-import { Dimensions, Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useEffect, useMemo, useState } from 'react';
+import { Dimensions, Image, Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import Toast from 'react-native-toast-message';
 
 interface AppBarProps {
   onMenuPress: () => void;
@@ -64,13 +67,49 @@ export function AppBar({ onMenuPress }: AppBarProps) {
   const [notifications] = useState<Notification[]>(mockNotifications);
   const isSmallScreen = dimensions.width < 768;
   const isLargeScreen = dimensions.width >= 1024;
+  const { user, clearUser } = useUser();
 
   // Mock user data
-  const userData = {
-    name: 'John Doe',
-    email: 'john.doe@example.com',
-    avatar: 'U', // Initial for avatar
-  };
+  const [avatarFailed, setAvatarFailed] = useState(false);
+  const apiBaseUrl = useMemo(
+    () => (process.env.EXPO_PUBLIC_SERVER_URL ?? 'http://localhost:5000').replace(/\/+$/, ''),
+    [],
+  );
+
+  useEffect(() => {
+    setAvatarFailed(false);
+  }, [user?.profilePhotoUrl]);
+
+  const userData = useMemo(() => {
+    const fallbackName = 'John Doe';
+    const fallbackEmail = 'john.doe@example.com';
+    const name = user?.name ?? fallbackName;
+    const email = user?.email ?? fallbackEmail;
+    const avatarInitial =
+      name
+        .split(' ')
+        .map((n) => n[0])
+        .join('')
+        .slice(0, 2)
+        .toUpperCase() || 'U';
+
+    let avatarUri = '';
+    const rawUri = user?.profilePhotoUrl;
+    if (rawUri && !avatarFailed) {
+      if (/^https?:\/\//i.test(rawUri)) {
+        avatarUri = rawUri;
+      } else {
+        avatarUri = `${apiBaseUrl}${rawUri.startsWith('/') ? rawUri : `/${rawUri}`}`;
+      }
+    }
+
+    return {
+      name,
+      email,
+      avatarInitial,
+      avatarUri,
+    };
+  }, [user, apiBaseUrl]);
 
   useEffect(() => {
     const subscription = Dimensions.addEventListener('change', ({ window }) => {
@@ -106,10 +145,25 @@ export function AppBar({ onMenuPress }: AppBarProps) {
     setIsAvatarPopoverOpen(false);
   };
 
-  const handleLogoutPress = () => {
-    // Handle logout
-    console.log('Logout');
+  const handleLogoutPress = async () => {
+    try {
+      await tokenStorage.clear();
+      clearUser();
+      router.replace('/signin');
+      Toast.show({
+        type: 'success',
+        text1: 'Logged out',
+        text2: 'You have been signed out successfully.',
+      });
+    } catch (error) {
+      Toast.show({
+        type: 'error',
+        text1: 'Logout failed',
+        text2: 'Unable to clear session. Please try again.',
+      });
+    } finally {
     setIsAvatarPopoverOpen(false);
+    }
   };
 
   const getNotificationIcon = (type: string) => {
@@ -177,8 +231,16 @@ export function AppBar({ onMenuPress }: AppBarProps) {
           />
         </Pressable>
         <Pressable style={styles.avatarButton} onPress={handleAvatarPress}>
-          <View style={[styles.avatar, { backgroundColor: colors.primary }]}>
-            <Text style={styles.avatarText}>{userData.avatar}</Text>
+          <View style={[styles.avatar, { backgroundColor: userData.avatarUri ? 'transparent' : colors.primary }]}>
+            {userData.avatarUri ? (
+              <Image
+                source={{ uri: userData.avatarUri }}
+                style={styles.avatarImage}
+                onError={() => setAvatarFailed(true)}
+              />
+            ) : (
+              <Text style={styles.avatarText}>{userData.avatarInitial}</Text>
+            )}
           </View>
         </Pressable>
       </View>
@@ -280,8 +342,16 @@ export function AppBar({ onMenuPress }: AppBarProps) {
           >
             {/* Profile Header */}
             <View style={[styles.avatarPopoverHeader, { borderBottomColor: colors.border }]}>
-              <View style={[styles.avatarPopoverAvatar, { backgroundColor: colors.primary }]}>
-                <Text style={styles.avatarPopoverAvatarText}>{userData.avatar}</Text>
+              <View style={[styles.avatarPopoverAvatar, { backgroundColor: userData.avatarUri ? 'transparent' : colors.primary }]}>
+                {userData.avatarUri ? (
+                  <Image
+                    source={{ uri: userData.avatarUri }}
+                    style={styles.popoverAvatarImage}
+                    onError={() => setAvatarFailed(true)}
+                  />
+                ) : (
+                  <Text style={styles.avatarPopoverAvatarText}>{userData.avatarInitial}</Text>
+                )}
               </View>
               <View style={styles.avatarPopoverUserInfo}>
                 <Text style={[styles.avatarPopoverName, { color: colors.text }]}>{userData.name}</Text>
@@ -419,6 +489,12 @@ const styles = StyleSheet.create({
     borderRadius: borderRadius.full,
     justifyContent: 'center',
     alignItems: 'center',
+    overflow: 'hidden',
+  },
+  avatarImage: {
+    width: '100%',
+    height: '100%',
+    resizeMode: 'cover',
   },
   avatarText: {
     color: '#FFFFFF',
@@ -521,6 +597,12 @@ const styles = StyleSheet.create({
     borderRadius: borderRadius.full,
     justifyContent: 'center',
     alignItems: 'center',
+    overflow: 'hidden',
+  },
+  popoverAvatarImage: {
+    width: '100%',
+    height: '100%',
+    resizeMode: 'cover',
   },
   avatarPopoverAvatarText: {
     color: '#FFFFFF',

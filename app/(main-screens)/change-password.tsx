@@ -1,8 +1,21 @@
+import { userApi } from '@/api/user.api';
 import { borderRadius, spacing, typography } from '@/constants/theme';
 import { useTheme } from '@/contexts/ThemeContext';
 import { Ionicons } from '@expo/vector-icons';
 import { useEffect, useRef, useState } from 'react';
-import { Animated, Dimensions, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Animated,
+  Dimensions,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from 'react-native';
+import Toast from 'react-native-toast-message';
 
 export default function ChangePassword() {
   const { isDark, colors } = useTheme();
@@ -14,6 +27,7 @@ export default function ChangePassword() {
     newPassword: '',
     confirmPassword: '',
   });
+  const [loading, setLoading] = useState(false);
 
   // Focus states for animations
   const [currentPasswordFocused, setCurrentPasswordFocused] = useState(false);
@@ -118,35 +132,65 @@ export default function ChangePassword() {
     outputRange: [colors.border, colors.borderFocus],
   });
 
-  const handleSave = () => {
-    // Validate passwords
+  const handleSave = async () => {
     if (!formData.currentPassword || !formData.newPassword || !formData.confirmPassword) {
-      // TODO: Show error message
-      console.log('All fields are required');
-      return;
-    }
-
-    if (formData.newPassword !== formData.confirmPassword) {
-      // TODO: Show error message
-      console.log('New password and confirm password do not match');
+      Toast.show({
+        type: 'error',
+        text1: 'Missing fields',
+        text2: 'Please fill out all password fields.',
+      });
       return;
     }
 
     if (formData.newPassword.length < 8) {
-      // TODO: Show error message
-      console.log('New password must be at least 8 characters');
+      Toast.show({
+        type: 'error',
+        text1: 'Weak password',
+        text2: 'New password must be at least 8 characters.',
+      });
       return;
     }
 
-    // TODO: Save password change
-    console.log('Password changed successfully');
-    
-    // Reset form
+    if (formData.newPassword !== formData.confirmPassword) {
+      Toast.show({
+        type: 'error',
+        text1: 'Passwords do not match',
+        text2: 'Confirm password should match the new password.',
+      });
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const response = await userApi.changePassword({
+        oldPassword: formData.currentPassword,
+        newPassword: formData.newPassword,
+        confirmPassword: formData.confirmPassword,
+      });
+
+      Toast.show({
+        type: 'success',
+        text1: 'Password updated',
+        text2: response.message ?? 'Your password was changed successfully.',
+      });
+
     setFormData({
       currentPassword: '',
       newPassword: '',
       confirmPassword: '',
     });
+    } catch (error) {
+      const apiError = error as { response?: { data?: { message?: string } }; message?: string };
+      const message =
+        apiError.response?.data?.message ?? apiError.message ?? 'Unable to change password. Please try again.';
+      Toast.show({
+        type: 'error',
+        text1: 'Update failed',
+        text2: message,
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -296,10 +340,18 @@ export default function ChangePassword() {
           {/* Action Buttons */}
           <View style={[styles.actionButtons, { borderTopColor: colors.border }]}>
             <Pressable
-              style={[styles.saveButton, { backgroundColor: colors.primary }]}
+              style={[
+                styles.saveButton,
+                { backgroundColor: colors.primary, opacity: loading ? 0.7 : 1 },
+              ]}
               onPress={handleSave}
+              disabled={loading}
             >
+              {loading ? (
+                <ActivityIndicator color="#FFFFFF" />
+              ) : (
               <Text style={styles.saveButtonText}>Change Password</Text>
+              )}
             </Pressable>
           </View>
         </View>

@@ -1,3 +1,4 @@
+import { authApi } from '@/api/auth';
 import { createCommonStyles } from '@/constants/commonStyles';
 import { borderRadius, spacing, theme, typography } from '@/constants/theme';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -18,6 +19,7 @@ import {
     TouchableOpacity,
     View,
 } from 'react-native';
+import Toast from 'react-native-toast-message';
 
 const { width } = Dimensions.get('window');
 const isTablet = width >= 768;
@@ -32,7 +34,7 @@ export default function ForgotPasswordScreen() {
   const [emailFocused, setEmailFocused] = useState(false);
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string>('');
 
   const emailAnim = useRef(new Animated.Value(0)).current;
 
@@ -77,14 +79,29 @@ export default function ForgotPasswordScreen() {
       return;
     }
 
-    setError(null);
+    setError('');
     setLoading(true);
 
-    // Simulate API call
-    setTimeout(() => {
-      setLoading(false);
+    try {
+      const response = await authApi.forgotPassword({ email: email.trim() });
+      Toast.show({
+        type: 'success',
+        text1: 'Email sent',
+        text2: response.message ?? 'Temp password sent to the email address.',
+      });
       setSubmitted(true);
-    }, 1500);
+    } catch (err) {
+      const apiError = err as { response?: { data?: { message?: string } }; message?: string };
+      const message =
+        apiError.response?.data?.message ?? apiError.message ?? 'Unable to send reset email. Please try again.';
+      Toast.show({
+        type: 'error',
+        text1: 'Request failed',
+        text2: message,
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -113,6 +130,11 @@ export default function ForgotPasswordScreen() {
             />
           </Pressable>
 
+          <View
+            style={[
+              dynamicStyles.formWrapper,
+              isTablet && dynamicStyles.tabletFormWrapper,
+            ]}>
           {/* Logo/Lock Icon */}
           <View style={styles.logoContainer}>
             <View style={[styles.logo, dynamicStyles.logo, dynamicStyles.lockIconContainer]}>
@@ -139,7 +161,7 @@ export default function ForgotPasswordScreen() {
                       backgroundColor: colors.inputBackground,
                       borderWidth: emailFocused ? 2 : 1,
                       borderRadius: borderRadius.md,
-                      borderColor: borderColorEmail,
+                        borderColor: error ? colors.error : borderColorEmail,
                     },
                   ]}>
                   <TextInput
@@ -149,7 +171,7 @@ export default function ForgotPasswordScreen() {
                     value={email}
                     onChangeText={(text) => {
                       setEmail(text);
-                      if (error) setError(null);
+                        if (error) setError('');
                     }}
                     onFocus={handleEmailFocus}
                     onBlur={handleEmailBlur}
@@ -160,7 +182,9 @@ export default function ForgotPasswordScreen() {
                     editable={!loading}
                   />
                 </Animated.View>
-                {error && <Text style={dynamicStyles.errorText}>{error}</Text>}
+                </View>
+                <View style={dynamicStyles.errorWrapper}>
+                  <Text style={dynamicStyles.errorText}>{error || ' '}</Text>
               </View>
 
               {/* Send Reset Link Button */}
@@ -203,6 +227,7 @@ export default function ForgotPasswordScreen() {
                 Back to Sign In
               </Text>
             </TouchableOpacity>
+            </View>
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
@@ -216,16 +241,22 @@ const makeStyles = (isDark: boolean, colors: any) =>
       flex: 1,
     },
     scrollContent: {
+      flexGrow: 1,
       paddingHorizontal: spacing.md,
-      paddingTop: spacing.xl,
-      paddingBottom: spacing.lg,
-      maxWidth: 480,
-      width: '100%',
-      alignSelf: 'center',
+      paddingVertical: spacing.xl,
+      justifyContent: 'center',
+      alignItems: 'center',
     },
     tabletContent: {
-      maxWidth: 600,
       paddingHorizontal: spacing.xl,
+    },
+    formWrapper: {
+      width: '100%',
+      maxWidth: 480,
+      alignSelf: 'center',
+    },
+    tabletFormWrapper: {
+      maxWidth: 600,
     },
     themeToggle: {
       position: 'absolute',
@@ -281,11 +312,17 @@ const makeStyles = (isDark: boolean, colors: any) =>
     buttonDisabled: {
       opacity: 0.6,
     },
+    errorWrapper: {
+      minHeight: spacing.md,
+      justifyContent: 'flex-start',
+      marginTop: -spacing.sm,
+      paddingTop: spacing.xs,
+      paddingBottom: spacing.xs,
+    },
     errorText: {
       fontSize: typography.fontSize.sm,
       color: colors.error,
       fontFamily: 'Inter_400Regular',
-      marginTop: spacing.xs,
       marginLeft: spacing.xs,
     },
     successContainer: {

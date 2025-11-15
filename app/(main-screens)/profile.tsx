@@ -1,26 +1,80 @@
+import { userApi } from '@/api/user.api';
 import { borderRadius, spacing, typography } from '@/constants/theme';
 import { useTheme } from '@/contexts/ThemeContext';
+import { useUser } from '@/contexts/UserContext';
 import { Ionicons } from '@expo/vector-icons';
-import { useEffect, useState } from 'react';
-import { Dimensions, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
+import { useEffect, useMemo, useState } from 'react';
+import {
+  ActivityIndicator,
+  Dimensions,
+  Image,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from 'react-native';
+import Toast from 'react-native-toast-message';
+
+const fallbackProfile = {
+  name: 'John Doe',
+  email: 'john.doe@example.com',
+  phoneNo: '+1 234 567 8900',
+  profilePhotoUrl: '',
+};
+
+const getInitials = (name: string) =>
+  name
+    ?.split(' ')
+    .map((part) => part[0])
+    .join('')
+    .slice(0, 2)
+    .toUpperCase() || 'JD';
+
+const buildProfileState = (data: {
+  name?: string;
+  email?: string;
+  phoneNo?: string;
+  phone?: string;
+  profilePhotoUrl?: string;
+  avatarUri?: string;
+}) => {
+  const name = data.name ?? fallbackProfile.name;
+  const email = data.email ?? fallbackProfile.email;
+  const phone = data.phoneNo ?? data.phone ?? fallbackProfile.phoneNo;
+  const avatarUri = data.avatarUri ?? data.profilePhotoUrl ?? '';
+
+  return {
+    name,
+    email,
+    phone,
+    avatar: getInitials(name),
+    avatarUri,
+  };
+};
 
 export default function Profile() {
   const { isDark, colors } = useTheme();
+  const { user, syncUser } = useUser();
   const [dimensions, setDimensions] = useState(Dimensions.get('window'));
   const [isEditing, setIsEditing] = useState(false);
+  const [saving, setSaving] = useState(false);
   
   // Dynamic styles for input fields (matching sign-in page approach)
   const inputStyles = makeInputStyles(isDark, colors);
   
-  // Mock user data
-  const [userData, setUserData] = useState({
-    name: 'John Doe',
-    email: 'john.doe@example.com',
-    phone: '+1 234 567 8900',
-    avatar: 'JD',
-  });
+  const defaultProfileState = buildProfileState(fallbackProfile);
+  const apiBaseUrl = useMemo(
+    () => (process.env.EXPO_PUBLIC_SERVER_URL ?? 'http://localhost:5000').replace(/\/+$/, ''),
+    [],
+  );
 
-  const [formData, setFormData] = useState(userData);
+  const [userData, setUserData] = useState(defaultProfileState);
+  const [formData, setFormData] = useState(defaultProfileState);
+  const [avatarFailed, setAvatarFailed] = useState(false);
   
   const isLargeScreen = dimensions.width >= 1024;
 
@@ -32,6 +86,35 @@ export default function Profile() {
     return () => subscription?.remove();
   }, []);
 
+  useEffect(() => {
+    if (user) {
+      const next = buildProfileState({
+        name: user.name,
+        email: user.email,
+        phoneNo: user.phoneNo,
+        profilePhotoUrl: user.profilePhotoUrl,
+      });
+      setUserData(next);
+      if (!isEditing) {
+        setFormData(next);
+      }
+    }
+  }, [user, isEditing]);
+
+  const resolvedAvatarUri = useMemo(() => {
+    const uri = formData.avatarUri;
+    if (!uri || avatarFailed) return '';
+    if (/^https?:\/\//i.test(uri)) {
+      return uri;
+    }
+    const normalizedPath = uri.startsWith('/') ? uri : `/${uri}`;
+    return `${apiBaseUrl}${normalizedPath}`;
+  }, [formData.avatarUri, apiBaseUrl, avatarFailed]);
+
+  useEffect(() => {
+    setAvatarFailed(false);
+  }, [formData.avatarUri]);
+
   const handleEdit = () => {
     setIsEditing(true);
     setFormData(userData);
@@ -42,11 +125,121 @@ export default function Profile() {
     setFormData(userData);
   };
 
-  const handleSave = () => {
-    setUserData(formData);
-    setIsEditing(false);
-    // TODO: Save to backend
-    console.log('Profile updated:', formData);
+  const handleSave = async () => {
+    if (!formData.name.trim() || !formData.phone.trim()) {
+      Toast.show({
+        type: 'error',
+        text1: 'Missing info',
+        text2: 'Name and phone number are required.',
+      });
+      return;
+    }
+
+    setSaving(true);
+    try {
+      const response = await userApi.updateProfile({
+        name: formData.name.trim(),
+        phoneNo: formData.phone.trim(),
+      });
+
+      syncUser(response.user);
+      const next = buildProfileState({
+        name: response.user.name,
+        email: response.user.email,
+        phoneNo: response.user.phoneNo,
+        profilePhotoUrl: response.user.profilePhotoUrl,
+        avatarUri: formData.avatarUri,
+      });
+      setUserData(next);
+      setFormData(next);
+      setIsEditing(false);
+
+      Toast.show({
+        type: 'success',
+        text1: 'Profile updated',
+        text2: response.message ?? 'Your profile details were saved.',
+      });
+    } catch (error) {
+      const apiError = error as { response?: { data?: { message?: string } }; message?: string };
+      const message =
+        apiError.response?.data?.message ?? apiError.message ?? 'Unable to update profile. Please try again.';
+      Toast.show({
+        type: 'error',
+        text1: 'Update failed',
+        text2: message,
+      });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleChangePhoto = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== 'granted') {
+      Toast.show({
+        type: 'error',
+        text1: 'Permission denied',
+        text2: 'Media library access is required to change the photo.',
+      });
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.8,
+    });
+
+    if (!result.canceled && result.assets?.length) {
+      const asset = result.assets[0];
+      const uri = asset.uri;
+      const previousAvatar = formData.avatarUri;
+      setFormData((prev) => ({ ...prev, avatarUri: uri }));
+      setUserData((prev) => ({ ...prev, avatarUri: uri }));
+
+      try {
+        setSaving(true);
+        const formDataUpload = new FormData();
+        const fileResponse = await fetch(uri);
+        const fileBlob = await fileResponse.blob();
+        const filename = uri.split('/').pop() ?? 'photo.jpg';
+
+        formDataUpload.append('photo', fileBlob as any, filename);
+
+        const response = await userApi.uploadProfilePhoto(formDataUpload);
+        const photoUrl = response.user.profilePhotoUrl ?? uri;
+
+        syncUser(response.user);
+        setUserData((prev) => ({
+          ...prev,
+          avatarUri: photoUrl,
+        }));
+        setFormData((prev) => ({
+          ...prev,
+          avatarUri: photoUrl,
+        }));
+
+        Toast.show({
+          type: 'success',
+          text1: 'Photo updated',
+          text2: response.message ?? 'Profile photo uploaded successfully.',
+        });
+      } catch (error) {
+        setUserData((prev) => ({ ...prev, avatarUri: previousAvatar }));
+        setFormData((prev) => ({ ...prev, avatarUri: previousAvatar }));
+        const apiError = error as { response?: { data?: { message?: string } }; message?: string };
+        const message =
+          apiError.response?.data?.message ?? apiError.message ?? 'Unable to upload photo. Please try again.';
+        Toast.show({
+          type: 'error',
+          text1: 'Upload failed',
+          text2: message,
+        });
+      } finally {
+        setSaving(false);
+      }
+    }
   };
 
   return (
@@ -74,20 +267,27 @@ export default function Profile() {
       >
         {/* Profile Picture Section */}
         <View style={styles.profilePictureSection}>
-          <View style={[styles.avatarContainer, { backgroundColor: colors.primary }]}>
-            <Text style={styles.avatarText}>{userData.avatar}</Text>
+          <View style={[styles.avatarContainer, { backgroundColor: resolvedAvatarUri ? 'transparent' : colors.primary }]}>
+            {resolvedAvatarUri ? (
+              <Image
+                source={{ uri: resolvedAvatarUri }}
+                style={styles.avatarImage}
+                onError={() => setAvatarFailed(true)}
+              />
+            ) : (
+              <Text style={styles.avatarText}>{userData.avatar}</Text>
+            )}
           </View>
-          {!isEditing && (
-            <Pressable
-              style={[styles.editAvatarButton, { borderColor: colors.border }]}
-              onPress={() => {}}
-            >
-              <Ionicons name="camera" size={20} color={colors.text} />
-              <Text style={[styles.editAvatarButtonText, { color: colors.text }]}>
-                Change Photo
-              </Text>
-            </Pressable>
-          )}
+          <Pressable
+            style={[styles.editAvatarButton, { borderColor: colors.border }]}
+            onPress={handleChangePhoto}
+            disabled={saving}
+          >
+            <Ionicons name="camera" size={20} color={colors.text} />
+            <Text style={[styles.editAvatarButtonText, { color: colors.text }]}>
+              Change Photo
+            </Text>
+          </Pressable>
         </View>
 
         {/* Profile Information Section */}
@@ -180,10 +380,21 @@ export default function Profile() {
                 <Text style={[styles.cancelButtonText, { color: colors.text }]}>Cancel</Text>
               </Pressable>
               <Pressable
-                style={[styles.saveButton, { backgroundColor: colors.primary }]}
+                style={[
+                  styles.saveButton,
+                  {
+                    backgroundColor: colors.primary,
+                    opacity: saving ? 0.7 : 1,
+                  },
+                ]}
                 onPress={handleSave}
+                disabled={saving}
               >
-                <Text style={styles.saveButtonText}>Save</Text>
+                {saving ? (
+                  <ActivityIndicator color="#FFFFFF" />
+                ) : (
+                  <Text style={styles.saveButtonText}>Save</Text>
+                )}
               </Pressable>
             </View>
           )}
@@ -251,6 +462,12 @@ const styles = StyleSheet.create({
     borderRadius: borderRadius.full,
     justifyContent: 'center',
     alignItems: 'center',
+    overflow: 'hidden',
+  },
+  avatarImage: {
+    width: '100%',
+    height: '100%',
+    resizeMode: 'cover',
   },
   avatarText: {
     color: '#FFFFFF',

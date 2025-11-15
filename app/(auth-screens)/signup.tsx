@@ -1,6 +1,8 @@
+import { authApi } from '@/api/auth';
 import { createCommonStyles } from '@/constants/commonStyles';
 import { borderRadius, spacing, theme, typography } from '@/constants/theme';
 import { useTheme } from '@/contexts/ThemeContext';
+import { useUser } from '@/contexts/UserContext';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useRef, useState } from 'react';
@@ -18,6 +20,7 @@ import {
     TouchableOpacity,
     View,
 } from 'react-native';
+import Toast from 'react-native-toast-message';
 
 const { width } = Dimensions.get('window');
 const isTablet = width >= 768;
@@ -25,6 +28,7 @@ const isTablet = width >= 768;
 export default function SignUpScreen() {
   const router = useRouter();
   const { isDark, colors, toggleTheme } = useTheme();
+  const { syncUser } = useUser();
   const styles = createCommonStyles({ ...theme, spacing, borderRadius, typography }, isDark);
   const dynamicStyles = makeStyles(isDark, colors);
 
@@ -138,11 +142,32 @@ export default function SignUpScreen() {
     }
 
     setLoading(true);
-    // Simulate API call
-    setTimeout(() => {
-      setLoading(false);
+    try {
+      const response = await authApi.signUp({
+        name: fullName.trim(),
+        email: email.trim(),
+        password,
+        confirmPassword,
+      });
+      syncUser(response.user);
+      Toast.show({
+        type: 'success',
+        text1: 'Account created',
+        text2: response.message ?? 'Please sign in with your new account.',
+      });
       router.push('/signin');
-    }, 1500);
+    } catch (error) {
+      const apiError = error as { response?: { data?: { message?: string } }; message?: string };
+      const message =
+        apiError.response?.data?.message ?? apiError.message ?? 'Unable to sign up. Please try again.';
+      Toast.show({
+        type: 'error',
+        text1: 'Sign up failed',
+        text2: message,
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -472,4 +497,5 @@ const makeStyles = (isDark: boolean, colors: any) =>
       paddingBottom: spacing.xl,
     },
   });
+
 
