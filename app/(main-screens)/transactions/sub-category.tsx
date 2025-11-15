@@ -200,19 +200,16 @@ export default function TransactionSubCategory() {
       {/* Filter Section */}
       <View style={[styles.filters, { borderBottomColor: colors.border }]}>
         <View style={[styles.filterRow, isLargeScreen && styles.filterRowLarge]}>
-          {/* Parent Category Filter */}
-          <View style={[styles.filterDropdownContainer, isLargeScreen && styles.filterDropdownContainerLarge]}>
-            <Dropdown
-              id="category-filter"
-              title="Category"
-              options={filterOptions}
-              selectedValue={filter}
-              onValueChange={(value) => setFilter(value)}
-              placeholder="Select category"
-              openDropdownId={openDropdownId}
-              onOpenChange={setOpenDropdownId}
-            />
-          </View>
+          <Dropdown
+            id="category-filter"
+            title="Category"
+            options={filterOptions}
+            selectedValue={filter}
+            onValueChange={(value) => setFilter(value)}
+            placeholder="Select category"
+            openDropdownId={openDropdownId}
+            onOpenChange={setOpenDropdownId}
+          />
         </View>
       </View>
 
@@ -516,14 +513,6 @@ const styles = StyleSheet.create({
     maxWidth: 1200,
     alignSelf: 'center',
     width: '100%',
-  },
-  filterDropdownContainer: {
-    width: '100%',
-    minWidth: 120,
-  },
-  filterDropdownContainerLarge: {
-    width: 250,
-    minWidth: 250,
   },
   scrollView: {
     flex: 1,

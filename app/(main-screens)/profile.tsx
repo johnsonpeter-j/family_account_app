@@ -152,7 +152,7 @@ export default function Profile() {
       });
       setUserData(next);
       setFormData(next);
-      setIsEditing(false);
+    setIsEditing(false);
 
       Toast.show({
         type: 'success',
@@ -275,19 +275,19 @@ export default function Profile() {
                 onError={() => setAvatarFailed(true)}
               />
             ) : (
-              <Text style={styles.avatarText}>{userData.avatar}</Text>
+            <Text style={styles.avatarText}>{userData.avatar}</Text>
             )}
           </View>
-          <Pressable
-            style={[styles.editAvatarButton, { borderColor: colors.border }]}
+            <Pressable
+              style={[styles.editAvatarButton, { borderColor: colors.border }]}
             onPress={handleChangePhoto}
             disabled={saving}
-          >
-            <Ionicons name="camera" size={20} color={colors.text} />
-            <Text style={[styles.editAvatarButtonText, { color: colors.text }]}>
-              Change Photo
-            </Text>
-          </Pressable>
+            >
+              <Ionicons name="camera" size={20} color={colors.text} />
+              <Text style={[styles.editAvatarButtonText, { color: colors.text }]}>
+                Change Photo
+              </Text>
+            </Pressable>
         </View>
 
         {/* Profile Information Section */}
@@ -393,7 +393,7 @@ export default function Profile() {
                 {saving ? (
                   <ActivityIndicator color="#FFFFFF" />
                 ) : (
-                  <Text style={styles.saveButtonText}>Save</Text>
+                <Text style={styles.saveButtonText}>Save</Text>
                 )}
               </Pressable>
             </View>

@@ -2,7 +2,7 @@ import { borderRadius, spacing, typography } from '@/constants/theme';
 import { useTheme } from '@/contexts/ThemeContext';
 import { Ionicons } from '@expo/vector-icons';
 import { useEffect, useState } from 'react';
-import { Animated, Dimensions, LayoutAnimation, Platform, Pressable, ScrollView, StyleSheet, Text, UIManager, View } from 'react-native';
+import { Animated, Dimensions, LayoutAnimation, Modal, Platform, Pressable, ScrollView, StyleSheet, Text, UIManager, View } from 'react-native';
 
 // Enable LayoutAnimation on Android
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
@@ -225,32 +225,30 @@ export function Sidebar({ isOpen, onClose, onNavigate }: SidebarProps) {
   });
 
   return (
-    <>
-      {isOpen && (
-        <Pressable style={styles.overlay} onPress={onClose}>
-          <Animated.View 
-            style={[
-              styles.mobileSidebar,
-              {
-                backgroundColor: colors.surface,
-                transform: [{ translateX }],
-              }
-            ]}
-          >
-            <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-              <View style={styles.header}>
-                <Text style={[styles.title, { color: colors.text }]}>Menu</Text>
-                <Pressable onPress={onClose} style={styles.closeButton}>
-                  <Ionicons name="close" size={24} color={colors.text} />
-                </Pressable>
-              </View>
-              
-              {menuItems.map((item) => renderMobileMenuItem(item))}
-            </ScrollView>
-          </Animated.View>
-        </Pressable>
-      )}
-    </>
+    <Modal visible={isOpen} animationType="fade" transparent onRequestClose={onClose}>
+      <Pressable style={styles.overlay} onPress={onClose}>
+        <Animated.View 
+          style={[
+            styles.mobileSidebar,
+            {
+              backgroundColor: colors.surface,
+              transform: [{ translateX }],
+            }
+          ]}
+        >
+          <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+            <View style={styles.header}>
+              <Text style={[styles.title, { color: colors.text }]}>Menu</Text>
+              <Pressable onPress={onClose} style={styles.closeButton}>
+                <Ionicons name="close" size={24} color={colors.text} />
+              </Pressable>
+            </View>
+            
+            {menuItems.map((item) => renderMobileMenuItem(item))}
+          </ScrollView>
+        </Animated.View>
+      </Pressable>
+    </Modal>
   );
 }
 
@@ -271,7 +269,7 @@ const styles = StyleSheet.create({
     left: 0,
     top: 0,
     zIndex: 1000,
-    elevation: 5,
+    elevation: 100,
     shadowColor: '#000',
     shadowOffset: { width: 2, height: 0 },
     shadowOpacity: 0.2,
@@ -285,6 +283,7 @@ const styles = StyleSheet.create({
     bottom: 0,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
     zIndex: 999,
+    elevation: 99,
   },
   scrollView: {
     flex: 1,

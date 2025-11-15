@@ -6,7 +6,8 @@ import { authApi } from '@/api/auth';
 import tokenStorage from '@/api/tokenStorage';
 import { Slot, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, Dimensions, SafeAreaView, View } from 'react-native';
+import { ActivityIndicator, Dimensions, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import Toast from 'react-native-toast-message';
 
 export default function MainScreensLayout() {
@@ -62,14 +63,14 @@ export default function MainScreensLayout() {
 
   if (checkingAuth) {
     return (
-      <SafeAreaView style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.background }}>
+      <SafeAreaView style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.background }} edges={['top']}>
         <ActivityIndicator size="large" color={colors.primary} />
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }} edges={['top']}>
       <AppBar onMenuPress={() => setSidebarOpen(!sidebarOpen)} />
       <View style={{ flex: 1, flexDirection: 'row' }}>
         {isLargeScreen && (
@@ -79,17 +80,17 @@ export default function MainScreensLayout() {
             onNavigate={handleNavigate}
           />
         )}
-        {!isLargeScreen && (
-          <Sidebar
-            isOpen={sidebarOpen}
-            onClose={() => setSidebarOpen(false)}
-            onNavigate={handleNavigate}
-          />
-        )}
         <View style={{ flex: 1 }}>
           <Slot />
         </View>
       </View>
+      {!isLargeScreen && (
+        <Sidebar
+          isOpen={sidebarOpen}
+          onClose={() => setSidebarOpen(false)}
+          onNavigate={handleNavigate}
+        />
+      )}
     </SafeAreaView>
   );
 }

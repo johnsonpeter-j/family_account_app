@@ -9,17 +9,17 @@ import { useRouter } from 'expo-router';
 import React, { useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
-  Animated,
-  Dimensions,
-  KeyboardAvoidingView,
-  Platform,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
+    Animated,
+    Dimensions,
+    KeyboardAvoidingView,
+    Platform,
+    Pressable,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from 'react-native';
 import Toast from 'react-native-toast-message';
 
@@ -250,7 +250,7 @@ export default function SignInScreen() {
         </View>
             <View style={dynamicStyles.errorWrapper}>
               <Text style={dynamicStyles.errorText}>{errors.email ?? ' '}</Text>
-            </View>
+        </View>
 
         {/* Password Input */}
         <View style={styles.inputContainer}>
@@ -296,7 +296,7 @@ export default function SignInScreen() {
         </View>
             <View style={dynamicStyles.errorWrapper}>
               <Text style={dynamicStyles.errorText}>{errors.password ?? ' '}</Text>
-            </View>
+        </View>
 
         {/* Forgot Password Link */}
         <TouchableOpacity
